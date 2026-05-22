@@ -1,5 +1,8 @@
 # PAS 1: Inicialitzar el projecte
 
+Aquest pas només l'heu de fer quan creeu el vostre projecte des de 0.
+En aquest cas concret, el projecte ja existeix, podeu passar al PAS 2.
+
 ## Crear projecte amb Vite
 ```bash
 npm create vite@latest sensorCam-explorer -- --template vanilla
