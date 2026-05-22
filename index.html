@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#0f0f1a"/>
+  <meta name="description" content="SensorCam Explorer - Càmera i sensors"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="SensorCam"/>
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <title>SensorCam Explorer</title>
+</head>
+<body>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash">
+    <div class="splash-content">
+      <div class="logo-icon">📡</div>
+      <h1>SensorCam</h1>
+      <p>Explorer</p>
+      <div class="loader-bar">
+        <div class="loader-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="app" class="hidden">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-left">
+        <span class="app-icon">📡</span>
+        <span class="app-title">SensorCam</span>
+      </div>
+      <div class="header-right">
+        <div id="sensor-status" class="status-badge offline">
+          <span class="status-dot"></span>
+          <span class="status-text">Sensors</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="app-main">
+
+      <!-- TAB: CÀMERA -->
+      <section id="tab-camera" class="tab-content active">
+        <div class="camera-wrapper">
+          <div class="camera-container" id="cameraContainer">
+            <video id="videoFeed" autoplay playsinline muted></video>
+            <canvas id="effectCanvas"></canvas>
+
+            <div class="camera-overlay">
+              <div class="corner top-left"></div>
+              <div class="corner top-right"></div>
+              <div class="corner bottom-left"></div>
+              <div class="corner bottom-right"></div>
+            </div>
+
+            <div class="motion-hud">
+              <div class="hud-item">
+                <span class="hud-label">X</span>
+                <div class="hud-bar"><div class="hud-fill" id="hudX"></div></div>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Y</span>
+                <div class="hud-bar"><div class="hud-fill" id="hudY"></div></div>
+              </div>
+            </div>
+
+            <div class="flash-overlay" id="flashOverlay"></div>
+
+            <div class="no-camera" id="noCamera">
+              <span>📷</span>
+              <p>Activa la càmera</p>
+              <small>Clica el botó per començar</small>
+            </div>
+          </div>
+
+          <div class="camera-controls">
+            <button class="ctrl-btn secondary" id="switchCamera" title="Canviar càmera">🔄</button>
+            <button class="ctrl-btn primary"   id="captureBtn"   title="Fer foto">
+              <div class="capture-ring">
+                <div class="capture-circle"></div>
+              </div>
+            </button>
+            <button class="ctrl-btn secondary" id="effectBtn"    title="Efectes">✨</button>
+          </div>
+
+          <div class="effect-selector" id="effectSelector">
+            <button class="effect-opt active" data-effect="normal">Normal</button>
+            <button class="effect-opt" data-effect="tilt-blur">Tilt</button>
+            <button class="effect-opt" data-effect="shake">Shake</button>
+            <button class="effect-opt" data-effect="neon">Neon</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: SENSORS -->
+      <section id="tab-sensors" class="tab-content">
+        <div class="sensors-wrapper">
+
+          <div class="sensor-card">
+            <div class="card-header">
+              <span class="card-icon">⚡</span>
+              <div>
+                <h3>Acceleròmetre</h3>
+                <small>Moviment en 3 eixos</small>
+              </div>
+              <div class="card-badge" id="accelBadge">OFF</div>
+            </div>
+
+            <div class="axes-display">
+              <div class="axis-row">
+                <span class="axis-label">Eix X</span>
+                <div class="axis-track">
+                  <div class="axis-bar x-bar" id="axisX"></div>
+                  <div class="axis-center"></div>
+                </div>
+                <span class="axis-value" id="valX">0.00</span>
+              </div>
+              <div class="axis-row">
+                <span class="axis-label">Eix Y</span>
+                <div class="axis-track">
+                  <div class="axis-bar y-bar" id="axisY"></div>
+                  <div class="axis-center"></div>
+                </div>
+                <span class="axis-value" id="valY">0.00</span>
+              </div>
+              <div class="axis-row">
+                <span class="axis-label">Eix Z</span>
+                <div class="axis-track">
+                  <div class="axis-bar z-bar" id="axisZ"></div>
+                  <div class="axis-center"></div>
+                </div>
+                <span class="axis-value" id="valZ">0.00</span>
+              </div>
+            </div>
+
+            <div class="sphere-container">
+              <div class="sphere" id="sphere3d">
+                <div class="sphere-dot"></div>
+              </div>
+              <div class="sphere-shadow" id="sphereShadow"></div>
+            </div>
+
+            <div class="intensity-display">
+              <span class="intensity-label">Intensitat</span>
+              <div class="intensity-ring">
+                <svg viewBox="0 0 100 100" class="intensity-svg">
+                  <defs>
+                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%"   stop-color="#7c3aed"/>
+                      <stop offset="100%" stop-color="#06b6d4"/>
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="40" class="ring-bg"/>
+                  <circle cx="50" cy="50" r="40" class="ring-fill" id="ringPath"/>
+                </svg>
+                <div class="intensity-value" id="intensityVal">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sensor-card">
+            <div class="card-header">
+              <span class="card-icon">🧭</span>
+              <div>
+                <h3>Orientació</h3>
+                <small>Inclinació del dispositiu</small>
+              </div>
+              <div class="card-badge" id="gyroBadge">OFF</div>
+            </div>
+
+            <div class="compass-container">
+              <div class="compass">
+                <div class="compass-rose" id="compassRose">
+                  <div class="compass-arrow"></div>
+                </div>
+                <div class="compass-labels">
+                  <span class="compass-n">N</span>
+                  <span class="compass-e">E</span>
+                  <span class="compass-s">S</span>
+                  <span class="compass-w">O</span>
+                </div>
+              </div>
+              <div class="orientation-data">
+                <div class="orient-item">
+                  <span class="orient-label">Alpha (Z)</span>
+                  <span class="orient-val" id="oAlpha">0°</span>
+                </div>
+                <div class="orient-item">
+                  <span class="orient-label">Beta (X)</span>
+                  <span class="orient-val" id="oBeta">0°</span>
+                </div>
+                <div class="orient-item">
+                  <span class="orient-label">Gamma (Y)</span>
+                  <span class="orient-val" id="oGamma">0°</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="activate-btn" id="activateBtn">
+            <span class="btn-icon">🚀</span> Activar Sensors
+          </button>
+
+          <div class="shake-alert hidden" id="shakeAlert">
+            <span>💥</span> Sacsejada detectada!
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB: GALERIA -->
+      <section id="tab-gallery" class="tab-content">
+        <div class="gallery-wrapper">
+          <div class="gallery-header">
+            <h2>Les meves fotos</h2>
+            <button class="clear-btn" id="clearGallery">🗑️ Netejar</button>
+          </div>
+          <div class="gallery-grid" id="galleryGrid">
+            <div class="gallery-empty" id="galleryEmpty">
+              <span>📭</span>
+              <p>Encara no hi ha fotos</p>
+              <small>Fes una foto amb la càmera!</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="camera">
+        <span class="tab-icon">📸</span>
+        <span>Càmera</span>
+      </button>
+      <button class="tab-btn" data-tab="sensors">
+        <span class="tab-icon">🔮</span>
+        <span>Sensors</span>
+      </button>
+      <button class="tab-btn" data-tab="gallery">
+        <span class="tab-icon">🖼️</span>
+        <span>Galeria</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- PHOTO MODAL -->
+  <div class="photo-modal hidden" id="photoModal">
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal-content">
+      <img id="modalImage" src="" alt="Foto capturada"/>
+      <div class="modal-info" id="modalInfo"></div>
+      <div class="modal-actions">
+        <button class="modal-btn download" id="downloadBtn">⬇️ Descarregar</button>
+        <button class="modal-btn close"    id="closeModal">✕ Tancar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Entry point de Vite -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
