@@ -74,7 +74,7 @@ netlify deploy --prod --dir dist
 
 ```bash
 npm install vercel
-vercel --prod
+npx vercel --prod
 ```
 
 ---
