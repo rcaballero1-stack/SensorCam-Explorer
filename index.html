@@ -3,241 +3,169 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <meta name="theme-color" content="#0f0f1a"/>
-  <meta name="description" content="SensorCam Explorer - Càmera i sensors"/>
+  <meta name="theme-color" content="#0f172a"/>
+  <meta name="description" content="ParkingRandy - Guarda i troba el teu cotxe fàcilment"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="SensorCam"/>
+  <meta name="apple-mobile-web-app-title" content="ParkingRandy"/>
 
-  <!-- Apple Touch Icons -->
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
-  <title>SensorCam Explorer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <title>ParkingRandy 🚗</title>
 </head>
 <body>
 
-  <!-- SPLASH SCREEN -->
   <div id="splash">
     <div class="splash-content">
-      <div class="logo-icon">📡</div>
-      <h1>SensorCam</h1>
-      <p>Explorer</p>
+      <div class="splash-icon">🚗</div>
+      <h1>ParkingRandy</h1>
+      <p>On he aparcat?</p>
       <div class="loader-bar">
         <div class="loader-fill"></div>
       </div>
     </div>
   </div>
 
-  <!-- APP PRINCIPAL -->
   <div id="app" class="hidden">
 
-    <!-- HEADER -->
     <header class="app-header">
       <div class="header-left">
-        <span class="app-icon">📡</span>
-        <span class="app-title">SensorCam</span>
+        <span class="app-icon">🚗</span>
+        <span class="app-title">ParkingRandy</span>
       </div>
       <div class="header-right">
-        <div id="sensor-status" class="status-badge offline">
+        <div id="gps-status" class="status-badge offline">
           <span class="status-dot"></span>
-          <span class="status-text">Sensors</span>
+          <span class="status-text">GPS</span>
         </div>
       </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <main class="app-main">
 
-      <!-- TAB: CÀMERA -->
-      <section id="tab-camera" class="tab-content active">
-        <div class="camera-wrapper">
+      <section id="tab-map" class="tab-content active">
+        <div class="map-wrapper">
+
+          <div class="park-info-card" id="parkInfoCard">
+            <div class="park-info-empty" id="parkInfoEmpty">
+              <span>📍</span>
+              <p>No hi ha cap aparcament registrat</p>
+              <small>Fes clic a "Aparcar aquí" per desar la posició actual</small>
+            </div>
+            <div class="park-info-data hidden" id="parkInfoData">
+              <div class="park-info-header">
+                <div class="park-info-icon">🅿️</div>
+                <div class="park-info-text">
+                  <h3 id="parkAddress">Carregant adreça…</h3>
+                  <small id="parkTime">—</small>
+                </div>
+                <button class="park-delete-btn" id="deleteParkBtn" title="Eliminar aparcament">✕</button>
+              </div>
+              <div class="park-photo-preview hidden" id="parkPhotoPreview">
+                <img id="parkPhotoThumb" src="" alt="Foto del parking"/>
+                <div class="park-photo-label">📸 Foto de la plaça</div>
+              </div>
+              <div class="park-notes-display hidden" id="parkNotesDisplay">
+                <span class="notes-icon">📝</span>
+                <span id="parkNotesText"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-container" id="mapContainer">
+            <div id="map"></div>
+            <div class="map-no-location hidden" id="mapNoLocation">
+              <span>🗺️</span>
+              <p>Activa la ubicació per veure el mapa</p>
+            </div>
+          </div>
+
+          <div class="map-actions">
+            <button class="action-btn primary" id="saveParkBtn">
+              <span>🅿️</span> Aparcar aquí
+            </button>
+            <button class="action-btn secondary" id="navigateBtn" disabled>
+              <span>🧭</span> Com hi arribo?
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <section id="tab-camera" class="tab-content">
+        <div class="photo-wrapper">
+
+          <div class="section-title">
+            <h2>📸 Detalls de la plaça</h2>
+            <small>Fes una foto o afegeix notes per recordar el lloc exacte (planta, columna...)</small>
+          </div>
+
           <div class="camera-container" id="cameraContainer">
             <video id="videoFeed" autoplay playsinline muted></video>
-            <canvas id="effectCanvas"></canvas>
-
             <div class="camera-overlay">
               <div class="corner top-left"></div>
               <div class="corner top-right"></div>
               <div class="corner bottom-left"></div>
               <div class="corner bottom-right"></div>
             </div>
-
-            <div class="motion-hud">
-              <div class="hud-item">
-                <span class="hud-label">X</span>
-                <div class="hud-bar"><div class="hud-fill" id="hudX"></div></div>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">Y</span>
-                <div class="hud-bar"><div class="hud-fill" id="hudY"></div></div>
-              </div>
-            </div>
-
             <div class="flash-overlay" id="flashOverlay"></div>
-
             <div class="no-camera" id="noCamera">
               <span>📷</span>
-              <p>Activa la càmera</p>
-              <small>Clica el botó per començar</small>
+              <p>Càmera inactiva</p>
+              <small>S'activarà en obrir aquesta pestanya</small>
             </div>
           </div>
 
           <div class="camera-controls">
-            <button class="ctrl-btn secondary" id="switchCamera" title="Canviar càmera">🔄</button>
-            <button class="ctrl-btn primary"   id="captureBtn"   title="Fer foto">
+            <button class="ctrl-btn secondary" id="switchCameraBtn" title="Girar càmera">🔄</button>
+            <button class="ctrl-btn primary" id="captureBtn" title="Fer foto">
               <div class="capture-ring">
                 <div class="capture-circle"></div>
               </div>
             </button>
-            <button class="ctrl-btn secondary" id="effectBtn"    title="Efectes">✨</button>
+            <button class="ctrl-btn secondary" id="clearPhotoBtn" title="Eliminar foto">🗑️</button>
           </div>
 
-          <div class="effect-selector" id="effectSelector">
-            <button class="effect-opt active" data-effect="normal">Normal</button>
-            <button class="effect-opt" data-effect="tilt-blur">Tilt</button>
-            <button class="effect-opt" data-effect="shake">Shake</button>
-            <button class="effect-opt" data-effect="neon">Neon</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB: SENSORS -->
-      <section id="tab-sensors" class="tab-content">
-        <div class="sensors-wrapper">
-
-          <div class="sensor-card">
-            <div class="card-header">
-              <span class="card-icon">⚡</span>
-              <div>
-                <h3>Acceleròmetre</h3>
-                <small>Moviment en 3 eixos</small>
-              </div>
-              <div class="card-badge" id="accelBadge">OFF</div>
+          <div class="photo-result hidden" id="photoResult">
+            <div class="photo-result-header">
+              <h3>✅ Imatge guardada temporalment</h3>
+              <small>Es vincularà quan confirmis l'aparcament al mapa</small>
             </div>
-
-            <div class="axes-display">
-              <div class="axis-row">
-                <span class="axis-label">Eix X</span>
-                <div class="axis-track">
-                  <div class="axis-bar x-bar" id="axisX"></div>
-                  <div class="axis-center"></div>
-                </div>
-                <span class="axis-value" id="valX">0.00</span>
-              </div>
-              <div class="axis-row">
-                <span class="axis-label">Eix Y</span>
-                <div class="axis-track">
-                  <div class="axis-bar y-bar" id="axisY"></div>
-                  <div class="axis-center"></div>
-                </div>
-                <span class="axis-value" id="valY">0.00</span>
-              </div>
-              <div class="axis-row">
-                <span class="axis-label">Eix Z</span>
-                <div class="axis-track">
-                  <div class="axis-bar z-bar" id="axisZ"></div>
-                  <div class="axis-center"></div>
-                </div>
-                <span class="axis-value" id="valZ">0.00</span>
-              </div>
-            </div>
-
-            <div class="sphere-container">
-              <div class="sphere" id="sphere3d">
-                <div class="sphere-dot"></div>
-              </div>
-              <div class="sphere-shadow" id="sphereShadow"></div>
-            </div>
-
-            <div class="intensity-display">
-              <span class="intensity-label">Intensitat</span>
-              <div class="intensity-ring">
-                <svg viewBox="0 0 100 100" class="intensity-svg">
-                  <defs>
-                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%"   stop-color="#7c3aed"/>
-                      <stop offset="100%" stop-color="#06b6d4"/>
-                    </linearGradient>
-                  </defs>
-                  <circle cx="50" cy="50" r="40" class="ring-bg"/>
-                  <circle cx="50" cy="50" r="40" class="ring-fill" id="ringPath"/>
-                </svg>
-                <div class="intensity-value" id="intensityVal">0</div>
-              </div>
-            </div>
+            <img id="photoResultImg" src="" alt="Foto del parking"/>
           </div>
 
-          <div class="sensor-card">
-            <div class="card-header">
-              <span class="card-icon">🧭</span>
-              <div>
-                <h3>Orientació</h3>
-                <small>Inclinació del dispositiu</small>
-              </div>
-              <div class="card-badge" id="gyroBadge">OFF</div>
-            </div>
-
-            <div class="compass-container">
-              <div class="compass">
-                <div class="compass-rose" id="compassRose">
-                  <div class="compass-arrow"></div>
-                </div>
-                <div class="compass-labels">
-                  <span class="compass-n">N</span>
-                  <span class="compass-e">E</span>
-                  <span class="compass-s">S</span>
-                  <span class="compass-w">O</span>
-                </div>
-              </div>
-              <div class="orientation-data">
-                <div class="orient-item">
-                  <span class="orient-label">Alpha (Z)</span>
-                  <span class="orient-val" id="oAlpha">0°</span>
-                </div>
-                <div class="orient-item">
-                  <span class="orient-label">Beta (X)</span>
-                  <span class="orient-val" id="oBeta">0°</span>
-                </div>
-                <div class="orient-item">
-                  <span class="orient-label">Gamma (Y)</span>
-                  <span class="orient-val" id="oGamma">0°</span>
-                </div>
-              </div>
-            </div>
+          <div class="notes-section">
+            <label class="notes-label" for="parkingNotes">📝 Notes de referència (pis, fila, etc.)</label>
+            <textarea id="parkingNotes" class="notes-input" placeholder="Ex: Planta -2, fila C, columna 14…" rows="3" maxlength="200"></textarea>
+            <div class="notes-counter"><span id="notesCounter">0</span>/200</div>
           </div>
 
-          <button class="activate-btn" id="activateBtn">
-            <span class="btn-icon">🚀</span> Activar Sensors
+          <button class="save-all-btn" id="saveAllBtn">
+            <span>💾</span> Desar foto i notes
           </button>
 
-          <div class="shake-alert hidden" id="shakeAlert">
-            <span>💥</span> Sacsejada detectada!
-          </div>
-
         </div>
       </section>
 
-      <!-- TAB: GALERIA -->
-      <section id="tab-gallery" class="tab-content">
-        <div class="gallery-wrapper">
-          <div class="gallery-header">
-            <h2>Les meves fotos</h2>
-            <button class="clear-btn" id="clearGallery">🗑️ Netejar</button>
+      <section id="tab-history" class="tab-content">
+        <div class="history-wrapper">
+          <div class="history-header">
+            <h2>🕐 Historial d'aparcaments</h2>
+            <button class="clear-btn" id="clearHistoryBtn">🗑️ Netejar tot</button>
           </div>
-          <div class="gallery-grid" id="galleryGrid">
-            <div class="gallery-empty" id="galleryEmpty">
+
+          <div class="history-list" id="historyList">
+            <div class="history-empty" id="historyEmpty">
               <span>📭</span>
-              <p>Encara no hi ha fotos</p>
-              <small>Fes una foto amb la càmera!</small>
+              <p>Encara no hi ha cap registre</p>
+              <small>Els teus aparcaments anteriors es guardaran aquí</small>
             </div>
           </div>
         </div>
@@ -245,41 +173,49 @@
 
     </main>
 
-    <!-- BOTTOM NAV -->
     <nav class="tab-nav">
-      <button class="tab-btn active" data-tab="camera">
+      <button class="tab-btn active" data-tab="map">
+        <span class="tab-icon">🗺️</span>
+        <span>Mapa</span>
+      </button>
+      <button class="tab-btn" data-tab="camera">
         <span class="tab-icon">📸</span>
-        <span>Càmera</span>
+        <span>Detalls</span>
       </button>
-      <button class="tab-btn" data-tab="sensors">
-        <span class="tab-icon">🔮</span>
-        <span>Sensors</span>
-      </button>
-      <button class="tab-btn" data-tab="gallery">
-        <span class="tab-icon">🖼️</span>
-        <span>Galeria</span>
+      <button class="tab-btn" data-tab="history">
+        <span class="tab-icon">🕐</span>
+        <span>Historial</span>
       </button>
     </nav>
 
   </div>
 
-  <!-- PHOTO MODAL -->
-  <div class="photo-modal hidden" id="photoModal">
+  <div class="detail-modal hidden" id="detailModal">
     <div class="modal-overlay" id="modalOverlay"></div>
     <div class="modal-content">
-      <img id="modalImage" src="" alt="Foto capturada"/>
-      <div class="modal-info" id="modalInfo"></div>
+      <div class="modal-header">
+        <h3 id="modalAddress">—</h3>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div id="modalMapMini" class="modal-map-mini"></div>
+      <div class="modal-body">
+        <div class="modal-meta" id="modalMeta"></div>
+        <img class="modal-photo hidden" id="modalPhoto" src="" alt="Foto parking"/>
+        <div class="modal-notes hidden" id="modalNotes"></div>
+      </div>
+      <div class="modal-close-area" style="padding: 0 20px 10px;">
+         <button class="modal-btn" id="modalCloseSecondaryBtn" style="width:100%; border:1px solid var(--border-color); border-radius:12px; background:var(--bg-card); color:var(--text-secondary); padding:12px; font-weight:600;" onclick="document.getElementById('detailModal').classList.add('hidden'); document.body.style.overflow='';">Tancar finestra</button>
+      </div>
       <div class="modal-actions">
-        <button class="modal-btn download" id="downloadBtn">⬇️ Descarregar</button>
-        <button class="modal-btn close"    id="closeModal">✕ Tancar</button>
+        <button class="modal-btn navigate" id="modalNavigateBtn">🧭 Navegar</button>
+        <button class="modal-btn delete" id="modalDeleteBtn">🗑️ Eliminar</button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Entry point de Vite -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
