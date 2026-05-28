@@ -1,3 +1,5 @@
+link: https://sensor-cam-explorer-rosy.vercel.app/
+
 # PAS 1: Inicialitzar el projecte
 
 Aquest pas només l'heu de fer quan creeu el vostre projecte des de 0.
